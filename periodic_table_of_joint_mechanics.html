@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Periodic Table of Joint Mechanics</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=JetBrains+Mono:wght@300;400&display=swap');
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #131313;
+  --surface2: #1a1a1a;
+  --border: #1e1e1e;
+  --border2: #282828;
+  --text: #ddd8d0;
+  --muted: #5a5550;
+  --dim: #2a2520;
+
+  --direct: #c8a052;
+  --direct-bg: rgba(200,160,82,0.12);
+  --direct-border: rgba(200,160,82,0.4);
+
+  --incidental: #6a9fb0;
+  --incidental-bg: rgba(106,159,176,0.10);
+  --incidental-border: rgba(106,159,176,0.35);
+
+  --rotating: #8a7eb0;
+  --rotating-bg: rgba(138,126,176,0.10);
+  --rotating-border: rgba(138,126,176,0.35);
+
+  --gap: #c05050;
+  --gap-bg: rgba(180,60,60,0.12);
+  --gap-border: rgba(180,60,60,0.35);
+
+  --empty-bg: #111;
+  --empty-border: #1a1a1a;
+
+  /* Joint group colors */
+  --axial: #7a6e5a;
+  --upper: #5a7a8a;
+  --lower: #6a7a5a;
+  --distal: #7a5a7a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 300;
+  min-height: 100vh;
+  padding: 40px 24px 80px;
+  overflow-x: hidden;
+}
+
+/* NOISE TEXTURE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+.container {
+  max-width: 1300px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  margin-bottom: 48px;
+  animation: fadeDown 0.8s ease both;
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--direct);
+  margin-bottom: 12px;
+}
+
+h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(36px, 6vw, 72px);
+  letter-spacing: 0.08em;
+  color: var(--text);
+  line-height: 0.95;
+  margin-bottom: 12px;
+}
+
+h1 span {
+  color: var(--direct);
+}
+
+.subtitle {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* PROGRAM SELECTOR */
+.program-selector {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.3s both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.prog-btn {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.prog-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--direct);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.prog-btn:hover { color: var(--text); border-color: var(--border2); }
+.prog-btn:hover::before { opacity: 0.06; }
+
+.prog-btn.active {
+  color: var(--direct);
+  border-color: var(--direct-border);
+  background: var(--direct-bg);
+}
+
+/* SCORE BAR */
+.score-bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-bottom: 32px;
+  padding: 16px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  animation: fadeUp 0.6s ease 0.4s both;
+}
+
+.score-display {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.score-pct {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 42px;
+  color: var(--direct);
+  letter-spacing: 0.05em;
+  line-height: 1;
+  transition: all 0.4s ease;
+}
+
+.score-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.score-track {
+  flex: 1;
+  height: 2px;
+  background: var(--border2);
+  position: relative;
+}
+
+.score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--direct), #e8c070);
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.score-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  background: var(--direct);
+  border-radius: 50%;
+}
+
+.score-benchmarks {
+  display: flex;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.benchmark {
+  font-size: 8px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.benchmark span {
+  color: var(--text);
+}
+
+/* LEGEND */
+.legend {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+  animation: fadeUp 0.6s ease 0.5s both;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 8.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.legend-pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* GROUP LABELS */
+.group-label {
+  font-size: 7px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  padding-left: 2px;
+}
+
+/* THE TABLE */
+.table-section {
+  margin-bottom: 20px;
+  animation: fadeUp 0.6s ease 0.6s both;
+}
+
+.joint-group {
+  margin-bottom: 6px;
+  position: relative;
+}
+
+.joint-group-label {
+  font-size: 7px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+  padding-left: 2px;
+  border-left: 2px solid;
+  padding-left: 8px;
+}
+
+.joint-group.axial .joint-group-label { color: var(--axial); border-color: var(--axial); }
+.joint-group.upper .joint-group-label { color: var(--upper); border-color: var(--upper); }
+.joint-group.lower .joint-group-label { color: var(--lower); border-color: var(--lower); }
+.joint-group.distal .joint-group-label { color: var(--distal); border-color: var(--distal); }
+
+.elements-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+/* ELEMENT CELL */
+.element {
+  width: 88px;
+  height: 88px;
+  padding: 7px;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.element::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  background: white;
+}
+
+.element:hover::before { opacity: 0.04; }
+.element:hover { transform: scale(1.04); z-index: 10; }
+
+/* States */
+.element.direct {
+  background: var(--direct-bg);
+  border-color: var(--direct-border);
+}
+
+.element.incidental {
+  background: var(--incidental-bg);
+  border-color: var(--incidental-border);
+}
+
+.element.rotating {
+  background: var(--rotating-bg);
+  border-color: var(--rotating-border);
+  border-style: dashed;
+}
+
+.element.gap {
+  background: var(--gap-bg);
+  border-color: var(--gap-border);
+}
+
+.element.empty {
+  background: var(--empty-bg);
+  border-color: var(--empty-border);
+  opacity: 0.25;
+  cursor: default;
+}
+
+.element.empty:hover { transform: none; }
+
+/* Element parts */
+.el-number {
+  font-size: 7px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+.el-symbol {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.element.direct .el-symbol { color: var(--direct); }
+.element.incidental .el-symbol { color: var(--incidental); }
+.element.rotating .el-symbol { color: var(--rotating); }
+.element.gap .el-symbol { color: var(--gap); }
+.element.empty .el-symbol { color: var(--muted); }
+
+.el-name {
+  font-size: 6.5px;
+  letter-spacing: 0.06em;
+  line-height: 1.3;
+  color: var(--muted);
+  text-align: center;
+}
+
+.el-joint {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  font-size: 6px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+/* TOOLTIP */
+.tooltip {
+  position: fixed;
+  background: #1a1a1a;
+  border: 1px solid var(--border2);
+  padding: 14px 18px;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  max-width: 260px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+}
+
+.tooltip.visible { opacity: 1; }
+
+.tooltip-joint {
+  font-size: 7px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.tooltip-plane {
+  font-family: 'Crimson Pro', serif;
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.tooltip-status {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding: 3px 8px;
+  display: inline-block;
+}
+
+.tooltip-status.direct { background: var(--direct-bg); color: var(--direct); border: 1px solid var(--direct-border); }
+.tooltip-status.incidental { background: var(--incidental-bg); color: var(--incidental); border: 1px solid var(--incidental-border); }
+.tooltip-status.rotating { background: var(--rotating-bg); color: var(--rotating); border: 1px solid var(--rotating-border); }
+.tooltip-status.gap { background: var(--gap-bg); color: var(--gap); border: 1px solid var(--gap-border); }
+
+.tooltip-movement {
+  font-size: 10px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.tooltip-note {
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.4;
+  font-style: italic;
+  font-family: 'Crimson Pro', serif;
+}
+
+/* DEFINITION */
+.definition {
+  margin-top: 40px;
+  padding: 20px 28px;
+  border-left: 2px solid var(--direct);
+  background: rgba(200,160,82,0.04);
+  animation: fadeUp 0.6s ease 0.9s both;
+}
+
+.definition-text {
+  font-family: 'Crimson Pro', serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.75;
+  color: #ccc8c0;
+}
+
+/* COMPARISON SIDE BY SIDE */
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 32px;
+  animation: fadeUp 0.6s ease 0.8s both;
+}
+
+.comparison-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 700px) {
+  .comparison { grid-template-columns: 1fr; }
+  .element { width: 72px; height: 72px; }
+  .el-symbol { font-size: 18px; }
+  .score-benchmarks { display: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="eyebrow">The Completeness Principle</div>
+    <h1>Periodic Table of<br><span>Joint Mechanics</span></h1>
+    <div class="subtitle">51 planes · 9 joint systems · one mechanical map</div>
+  </div>
+
+  <!-- PROGRAM SELECTOR -->
+  <div class="program-selector">
+    <button class="prog-btn" onclick="loadProgram('powerlifting')">Powerlifting</button>
+    <button class="prog-btn" onclick="loadProgram('bro')">Bro Split</button>
+    <button class="prog-btn" onclick="loadProgram('ppl')">Push / Pull / Legs</button>
+    <button class="prog-btn" onclick="loadProgram('athletic')">Athletic</button>
+    <button class="prog-btn active" onclick="loadProgram('corey')">This Program</button>
+  </div>
+
+  <!-- SCORE BAR -->
+  <div class="score-bar">
+    <div class="score-display">
+      <div class="score-pct" id="scoreDisplay">87%</div>
+      <div class="score-label">Mechanical<br>Completeness</div>
+    </div>
+    <div class="score-track">
+      <div class="score-fill" id="scoreFill" style="width:87%"></div>
+    </div>
+    <div class="score-benchmarks">
+      <div class="benchmark">Powerlifting <span>~45%</span></div>
+      <div class="benchmark">Bro Split <span>~58%</span></div>
+      <div class="benchmark">PPL <span>~67%</span></div>
+      <div class="benchmark">Athletic <span>~78%</span></div>
+    </div>
+  </div>
+
+  <!-- LEGEND -->
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-pip" style="background:var(--direct)"></div>
+      Direct
+    </div>
+    <div class="legend-item">
+      <div class="legend-pip" style="background:var(--incidental)"></div>
+      Incidental
+    </div>
+    <div class="legend-item">
+      <div class="legend-pip" style="background:var(--rotating); border-radius:2px; outline: 1px dashed var(--rotating); outline-offset:1px"></div>
+      Rotating / Periodized
+    </div>
+    <div class="legend-item">
+      <div class="legend-pip" style="background:var(--gap)"></div>
+      Gap
+    </div>
+    <div class="legend-item">
+      <div class="legend-pip" style="background:var(--empty-bg); border:1px solid var(--border2)"></div>
+      N/A this group
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-section" id="tableContainer"></div>
+
+  <!-- DEFINITION -->
+  <div class="definition">
+    <div class="definition-text">A training program is mechanically complete when every joint's primary planes of motion are either directly trained, incidentally stabilized, or deliberately rotated across the training cycle — with volume distributed proportionally to the anatomical mass of the fibers in that plane.</div>
+  </div>
+
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip">
+  <div class="tooltip-joint" id="ttJoint"></div>
+  <div class="tooltip-plane" id="ttPlane"></div>
+  <div class="tooltip-status" id="ttStatus"></div>
+  <div class="tooltip-movement" id="ttMovement"></div>
+  <div class="tooltip-note" id="ttNote"></div>
+</div>
+
+<script>
+// =============================================
+// DATA STRUCTURE
+// =============================================
+
+const JOINTS = [
+  {
+    id: 'spine',
+    name: 'Axial — Lumbar / Thoracic',
+    group: 'axial',
+    planes: [
+      { id: 'sp_flex', sym: 'SpF', name: 'Flexion', abbr: 'Sp·Fl' },
+      { id: 'sp_ext', sym: 'SpE', name: 'Extension', abbr: 'Sp·Ex' },
+      { id: 'sp_antiflex', sym: 'AnF', name: 'Anti-Flex', abbr: 'Sp·AF' },
+      { id: 'sp_antiext', sym: 'AnE', name: 'Anti-Ext', abbr: 'Sp·AE' },
+      { id: 'sp_rot', sym: 'SpR', name: 'Rotation', abbr: 'Sp·Ro' },
+      { id: 'sp_antirot', sym: 'AnR', name: 'Anti-Rot', abbr: 'Sp·AR' },
+      { id: 'sp_lat', sym: 'SpL', name: 'Lateral Flex', abbr: 'Sp·LF' },
+      { id: 'sp_antilat', sym: 'AnL', name: 'Anti-Lat', abbr: 'Sp·AL' },
+    ]
+  },
+  {
+    id: 'cervical',
+    name: 'Axial — Cervical',
+    group: 'axial',
+    planes: [
+      { id: 'cv_flex', sym: 'CvF', name: 'Flexion', abbr: 'Cv·Fl' },
+      { id: 'cv_ext', sym: 'CvE', name: 'Extension', abbr: 'Cv·Ex' },
+      { id: 'cv_lat', sym: 'CvL', name: 'Lateral Flex', abbr: 'Cv·LF' },
+      { id: 'cv_antilat', sym: 'CvA', name: 'Anti-Lat', abbr: 'Cv·AL' },
+      { id: 'cv_rot', sym: 'CvR', name: 'Rotation', abbr: 'Cv·Ro' },
+    ]
+  },
+  {
+    id: 'shoulder',
+    name: 'Upper — Glenohumeral',
+    group: 'upper',
+    planes: [
+      { id: 'sh_flex', sym: 'ShF', name: 'Flexion', abbr: 'Sh·Fl' },
+      { id: 'sh_ext', sym: 'ShE', name: 'Extension', abbr: 'Sh·Ex' },
+      { id: 'sh_abd', sym: 'ShA', name: 'Abduction', abbr: 'Sh·Ab' },
+      { id: 'sh_add', sym: 'ShD', name: 'Adduction', abbr: 'Sh·Ad' },
+      { id: 'sh_hflex', sym: 'HzF', name: 'Horiz Flex', abbr: 'Sh·HF' },
+      { id: 'sh_hext', sym: 'HzE', name: 'Horiz Ext', abbr: 'Sh·HE' },
+      { id: 'sh_ir', sym: 'ShI', name: 'Int Rotation', abbr: 'Sh·IR' },
+      { id: 'sh_er', sym: 'ShX', name: 'Ext Rotation', abbr: 'Sh·ER' },
+      { id: 'sh_d1', sym: 'D1', name: 'Diagonal D1', abbr: 'Sh·D1' },
+      { id: 'sh_d2', sym: 'D2', name: 'Diagonal D2', abbr: 'Sh·D2' },
+    ]
+  },
+  {
+    id: 'scapula',
+    name: 'Upper — Scapulothoracic',
+    group: 'upper',
+    planes: [
+      { id: 'sc_ret', sym: 'ScR', name: 'Retraction', abbr: 'Sc·Re' },
+      { id: 'sc_pro', sym: 'ScP', name: 'Protraction', abbr: 'Sc·Pr' },
+      { id: 'sc_elev', sym: 'ScE', name: 'Elevation', abbr: 'Sc·El' },
+      { id: 'sc_dep', sym: 'ScD', name: 'Depression', abbr: 'Sc·De' },
+      { id: 'sc_uprot', sym: 'ScU', name: 'Up Rotation', abbr: 'Sc·UR' },
+      { id: 'sc_dnrot', sym: 'ScW', name: 'Down Rot', abbr: 'Sc·DR' },
+    ]
+  },
+  {
+    id: 'elbow',
+    name: 'Upper — Elbow',
+    group: 'upper',
+    planes: [
+      { id: 'el_flex', sym: 'ElF', name: 'Flexion', abbr: 'El·Fl' },
+      { id: 'el_ext', sym: 'ElE', name: 'Extension', abbr: 'El·Ex' },
+      { id: 'el_sup', sym: 'Sup', name: 'Supination', abbr: 'El·Su' },
+      { id: 'el_pro', sym: 'Pro', name: 'Pronation', abbr: 'El·Pr' },
+    ]
+  },
+  {
+    id: 'wrist',
+    name: 'Distal — Wrist & Forearm',
+    group: 'distal',
+    planes: [
+      { id: 'wr_flex', sym: 'WrF', name: 'Flexion', abbr: 'Wr·Fl' },
+      { id: 'wr_ext', sym: 'WrE', name: 'Extension', abbr: 'Wr·Ex' },
+      { id: 'wr_rad', sym: 'Rad', name: 'Radial Dev', abbr: 'Wr·Rd' },
+      { id: 'wr_uln', sym: 'Uln', name: 'Ulnar Dev', abbr: 'Wr·Ul' },
+      { id: 'wr_fflex', sym: 'FgF', name: 'Finger Flex', abbr: 'Wr·FF' },
+      { id: 'wr_fext', sym: 'FgE', name: 'Finger Ext', abbr: 'Wr·FE' },
+    ]
+  },
+  {
+    id: 'hip',
+    name: 'Lower — Hip',
+    group: 'lower',
+    planes: [
+      { id: 'hp_flex', sym: 'HpF', name: 'Flexion', abbr: 'Hp·Fl' },
+      { id: 'hp_ext', sym: 'HpE', name: 'Extension', abbr: 'Hp·Ex' },
+      { id: 'hp_abd', sym: 'HpA', name: 'Abduction', abbr: 'Hp·Ab' },
+      { id: 'hp_add', sym: 'HpD', name: 'Adduction', abbr: 'Hp·Ad' },
+      { id: 'hp_ir', sym: 'HpI', name: 'Int Rotation', abbr: 'Hp·IR' },
+      { id: 'hp_er', sym: 'HpX', name: 'Ext Rotation', abbr: 'Hp·ER' },
+      { id: 'hp_al', sym: 'HpL', name: 'Anti-Lat', abbr: 'Hp·AL' },
+    ]
+  },
+  {
+    id: 'knee',
+    name: 'Lower — Knee',
+    group: 'lower',
+    planes: [
+      { id: 'kn_flex', sym: 'KnF', name: 'Flexion', abbr: 'Kn·Fl' },
+      { id: 'kn_ext', sym: 'KnE', name: 'Extension', abbr: 'Kn·Ex' },
+      { id: 'kn_rot', sym: 'KnR', name: 'Rot Stability', abbr: 'Kn·RS' },
+    ]
+  },
+  {
+    id: 'ankle',
+    name: 'Distal — Ankle',
+    group: 'distal',
+    planes: [
+      { id: 'ank_pf', sym: 'AnP', name: 'Plantarflex', abbr: 'Ank·PF' },
+      { id: 'ank_df', sym: 'AnD', name: 'Dorsiflexion', abbr: 'Ank·DF' },
+      { id: 'ank_inv', sym: 'AnV', name: 'Inv / Ever', abbr: 'Ank·IE' },
+    ]
+  },
+];
+
+// =============================================
+// PROGRAM COVERAGE DATA
+// =============================================
+
+const PROGRAMS = {
+  corey: {
+    name: "This Program",
+    score: 87,
+    coverage: {
+      // SPINE
+      sp_flex: { status: 'direct', movement: 'Knee Raises · Incline Situp', note: 'Lower and upper chain flexion across chest and shoulder days' },
+      sp_ext: { status: 'direct', movement: 'Conventional Deadlifts', note: 'Every back session. Primary spinal extension stimulus.' },
+      sp_antiflex: { status: 'direct', movement: 'Ab Wheel Rollout', note: 'Dynamic anti-extension. Shoulder day.' },
+      sp_antiext: { status: 'direct', movement: 'Plank', note: 'Static anti-extension. Chest day.' },
+      sp_rot: { status: 'incidental', movement: 'Military Press · Pulling', note: 'Incidental through asymmetric loading' },
+      sp_antirot: { status: 'direct', movement: 'Pallof Press', note: 'Anti-rotation. Back day every session.' },
+      sp_lat: { status: 'gap', movement: 'Not programmed', note: 'Low priority currently' },
+      sp_antilat: { status: 'direct', movement: 'Side Plank · Lateral Cable Hold', note: 'Legs day. Anti-lateral flexion both planes.' },
+      // CERVICAL
+      cv_flex: { status: 'direct', movement: 'Neck Harness Cable', note: 'Sagittal plane. Chest day.' },
+      cv_ext: { status: 'direct', movement: 'Neck Harness Cable', note: 'Sagittal plane. Chest day.' },
+      cv_lat: { status: 'direct', movement: 'Neck Harness Cable', note: 'Frontal plane. Shoulder day.' },
+      cv_antilat: { status: 'incidental', movement: 'Carries · Suitcase Hold', note: 'Incidental cervical lateral chain' },
+      cv_rot: { status: 'gap', movement: 'Not programmed', note: 'Intentionally deprioritized — DDD history C-spine' },
+      // SHOULDER
+      sh_flex: { status: 'direct', movement: 'Military Press', note: 'Shoulder day every session.' },
+      sh_ext: { status: 'direct', movement: 'Chest Supported Rows', note: 'Back day. Multiple angle variations.' },
+      sh_abd: { status: 'rotating', movement: 'DB Lateral Raise', note: 'Angle rotates: 90° / 110° / 130° / cable across sessions' },
+      sh_add: { status: 'direct', movement: 'Cable Flies', note: 'Chest day. 1 set each low/mid/high every session.' },
+      sh_hflex: { status: 'direct', movement: 'Bench Press · Dips', note: 'Chest day. Flat / incline / decline rotation.' },
+      sh_hext: { status: 'direct', movement: 'Rear Delt Cable Row', note: 'Shoulder day. Stance and height variation.' },
+      sh_ir: { status: 'incidental', movement: 'Pressing movements', note: 'Incidental stabilization through all press variations' },
+      sh_er: { status: 'gap', movement: '90/90 not programmed', note: 'Highest priority gap. Forearm bar in 90/90 is the solution.' },
+      sh_d1: { status: 'gap', movement: 'Not programmed', note: 'PNF diagonal. Future addition.' },
+      sh_d2: { status: 'gap', movement: 'Not programmed', note: 'PNF diagonal. Future addition.' },
+      // SCAPULA
+      sc_ret: { status: 'direct', movement: 'All Row Variations', note: 'Every back session. Multiple angle and grip variations.' },
+      sc_pro: { status: 'incidental', movement: 'Pressing movements', note: 'Incidental at lockout of all press movements' },
+      sc_elev: { status: 'direct', movement: 'Upright Rows · Shrugs', note: 'Back day. 110° chest supported + barbell shrugs.' },
+      sc_dep: { status: 'direct', movement: 'Pull Ups · Chin Ups · Pulldowns', note: 'Back and shoulder day every session.' },
+      sc_uprot: { status: 'incidental', movement: 'OHP · Lateral Raise', note: 'Incidental through overhead movements' },
+      sc_dnrot: { status: 'gap', movement: 'Not programmed', note: 'Closest: controlled shrug lowering via movement intention' },
+      // ELBOW
+      el_flex: { status: 'direct', movement: 'Curls · Pull Ups · Rows', note: 'Shoulder day: barbell, incline, reverse, preacher, waiter curls' },
+      el_ext: { status: 'direct', movement: 'Skullcrushers · Dips · Extensions', note: 'Chest day every session.' },
+      el_sup: { status: 'direct', movement: 'Forearm Bar Rotation', note: 'Back day every session. Full ROM.' },
+      el_pro: { status: 'direct', movement: 'Forearm Bar Rotation', note: 'Back day every session. Full ROM.' },
+      // WRIST
+      wr_flex: { status: 'incidental', movement: 'Rotational stabilization', note: 'Incidental through all grip work' },
+      wr_ext: { status: 'incidental', movement: 'Reverse Curls', note: 'Anti-flexion as byproduct of brachioradialis work' },
+      wr_rad: { status: 'direct', movement: 'Forearm Bar Deviation', note: 'Legs day every session.' },
+      wr_uln: { status: 'direct', movement: 'Forearm Bar Deviation', note: 'Legs day every session.' },
+      wr_fflex: { status: 'direct', movement: 'Deadlifts · Carries', note: 'Back day. Maximum crushing grip demand.' },
+      wr_fext: { status: 'direct', movement: 'Low Cable — Back of Hand', note: 'Legs day. Antagonist balance to deadlift grip.' },
+      // HIP
+      hp_flex: { status: 'direct', movement: 'Squat · Leg Press', note: 'Legs day every session.' },
+      hp_ext: { status: 'direct', movement: 'Deadlifts · Leg Curls · RDL', note: 'Back day deadlifts. Legs day RDL and curls.' },
+      hp_abd: { status: 'rotating', movement: 'Lateral Lunge', note: 'Session 3 of four session leg rotation cycle.' },
+      hp_add: { status: 'rotating', movement: 'Lateral Lunge', note: 'Session 3. Adduction return phase of lateral lunge.' },
+      hp_ir: { status: 'rotating', movement: 'Hip Rotation · Bulgarian Split', note: 'Session 4. Transverse plane rotation.' },
+      hp_er: { status: 'rotating', movement: 'Hip Rotation · Bulgarian Split', note: 'Session 4. Transverse plane rotation.' },
+      hp_al: { status: 'incidental', movement: 'Suitcase Carry', note: 'Incidental hip lateral stability through anti-lateral flexion carry' },
+      // KNEE
+      kn_flex: { status: 'direct', movement: 'Leg Curls · Squats', note: 'Legs day every session.' },
+      kn_ext: { status: 'direct', movement: 'Leg Extensions · Leg Press · Squats', note: 'Legs day every session.' },
+      kn_rot: { status: 'incidental', movement: 'Single Leg Progressions', note: 'Incidental when single leg work is present in rotation' },
+      // ANKLE
+      ank_pf: { status: 'direct', movement: 'Calf Raises', note: 'Legs day every session.' },
+      ank_df: { status: 'gap', movement: 'Not programmed', note: 'Tibialis anterior work. Future consideration.' },
+      ank_inv: { status: 'gap', movement: 'Not programmed', note: 'Inversion/eversion. Future consideration.' },
+    }
+  },
+
+  powerlifting: {
+    name: "Powerlifting",
+    score: 45,
+    coverage: {
+      sp_flex: { status: 'gap', movement: 'Not typically programmed', note: '' },
+      sp_ext: { status: 'direct', movement: 'Deadlift · Good Morning', note: '' },
+      sp_antiflex: { status: 'incidental', movement: 'Bracing', note: '' },
+      sp_antiext: { status: 'incidental', movement: 'Bracing', note: '' },
+      sp_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sp_antirot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sp_lat: { status: 'gap', movement: 'Not programmed', note: '' },
+      sp_antilat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_flex: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_ext: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_lat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_antilat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_flex: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_ext: { status: 'direct', movement: 'Rows · Pulldowns', note: '' },
+      sh_abd: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_add: { status: 'direct', movement: 'Bench Press', note: '' },
+      sh_hflex: { status: 'direct', movement: 'Bench Press', note: '' },
+      sh_hext: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_ir: { status: 'incidental', movement: 'Bench Press', note: '' },
+      sh_er: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_d1: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_d2: { status: 'gap', movement: 'Not programmed', note: '' },
+      sc_ret: { status: 'direct', movement: 'Rows', note: '' },
+      sc_pro: { status: 'incidental', movement: 'Bench Press', note: '' },
+      sc_elev: { status: 'gap', movement: 'Not programmed', note: '' },
+      sc_dep: { status: 'direct', movement: 'Pulldowns', note: '' },
+      sc_uprot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sc_dnrot: { status: 'gap', movement: 'Not programmed', note: '' },
+      el_flex: { status: 'direct', movement: 'Rows · Curls (accessory)', note: '' },
+      el_ext: { status: 'direct', movement: 'Bench Press · Extensions', note: '' },
+      el_sup: { status: 'gap', movement: 'Not programmed', note: '' },
+      el_pro: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_flex: { status: 'incidental', movement: 'Grip work', note: '' },
+      wr_ext: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_rad: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_uln: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_fflex: { status: 'direct', movement: 'Deadlifts', note: '' },
+      wr_fext: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_flex: { status: 'direct', movement: 'Squat', note: '' },
+      hp_ext: { status: 'direct', movement: 'Deadlift · Squat', note: '' },
+      hp_abd: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_add: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_ir: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_er: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_al: { status: 'gap', movement: 'Not programmed', note: '' },
+      kn_flex: { status: 'direct', movement: 'Squat · Leg Curl', note: '' },
+      kn_ext: { status: 'direct', movement: 'Squat', note: '' },
+      kn_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      ank_pf: { status: 'incidental', movement: 'Squat stance', note: '' },
+      ank_df: { status: 'gap', movement: 'Not programmed', note: '' },
+      ank_inv: { status: 'gap', movement: 'Not programmed', note: '' },
+    }
+  },
+
+  bro: {
+    name: "Bro Split",
+    score: 58,
+    coverage: {
+      sp_flex: { status: 'direct', movement: 'Crunches · Situps', note: '' },
+      sp_ext: { status: 'direct', movement: 'Deadlifts', note: '' },
+      sp_antiflex: { status: 'gap', movement: 'Not typically programmed', note: '' },
+      sp_antiext: { status: 'incidental', movement: 'Bracing', note: '' },
+      sp_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sp_antirot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sp_lat: { status: 'gap', movement: 'Not programmed', note: '' },
+      sp_antilat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_flex: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_ext: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_lat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_antilat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_flex: { status: 'direct', movement: 'Overhead Press · Front Raise', note: '' },
+      sh_ext: { status: 'direct', movement: 'Rows · Pulldowns', note: '' },
+      sh_abd: { status: 'direct', movement: 'Lateral Raises', note: '' },
+      sh_add: { status: 'direct', movement: 'Flies · Cable Flies', note: '' },
+      sh_hflex: { status: 'direct', movement: 'Bench Press', note: '' },
+      sh_hext: { status: 'incidental', movement: 'Rear Delt Flies', note: '' },
+      sh_ir: { status: 'incidental', movement: 'Pressing', note: '' },
+      sh_er: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_d1: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_d2: { status: 'gap', movement: 'Not programmed', note: '' },
+      sc_ret: { status: 'direct', movement: 'Rows', note: '' },
+      sc_pro: { status: 'incidental', movement: 'Pressing', note: '' },
+      sc_elev: { status: 'direct', movement: 'Shrugs', note: '' },
+      sc_dep: { status: 'direct', movement: 'Pulldowns · Pull Ups', note: '' },
+      sc_uprot: { status: 'incidental', movement: 'Lateral Raises', note: '' },
+      sc_dnrot: { status: 'gap', movement: 'Not programmed', note: '' },
+      el_flex: { status: 'direct', movement: 'Curls', note: '' },
+      el_ext: { status: 'direct', movement: 'Extensions · Dips', note: '' },
+      el_sup: { status: 'gap', movement: 'Not programmed', note: '' },
+      el_pro: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_flex: { status: 'incidental', movement: 'Grip', note: '' },
+      wr_ext: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_rad: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_uln: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_fflex: { status: 'direct', movement: 'Deadlifts · Rows', note: '' },
+      wr_fext: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_flex: { status: 'direct', movement: 'Squat · Leg Press', note: '' },
+      hp_ext: { status: 'direct', movement: 'Deadlift · RDL · Leg Curl', note: '' },
+      hp_abd: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_add: { status: 'incidental', movement: 'Inner thigh machine sometimes', note: '' },
+      hp_ir: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_er: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_al: { status: 'gap', movement: 'Not programmed', note: '' },
+      kn_flex: { status: 'direct', movement: 'Leg Curl · Squat', note: '' },
+      kn_ext: { status: 'direct', movement: 'Leg Extension · Leg Press', note: '' },
+      kn_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      ank_pf: { status: 'direct', movement: 'Calf Raises', note: '' },
+      ank_df: { status: 'gap', movement: 'Not programmed', note: '' },
+      ank_inv: { status: 'gap', movement: 'Not programmed', note: '' },
+    }
+  },
+
+  ppl: {
+    name: "Push / Pull / Legs",
+    score: 67,
+    coverage: {
+      sp_flex: { status: 'incidental', movement: 'Ab work sometimes', note: '' },
+      sp_ext: { status: 'direct', movement: 'Deadlifts', note: '' },
+      sp_antiflex: { status: 'incidental', movement: 'Bracing', note: '' },
+      sp_antiext: { status: 'incidental', movement: 'Plank sometimes', note: '' },
+      sp_rot: { status: 'gap', movement: 'Not typically programmed', note: '' },
+      sp_antirot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sp_lat: { status: 'gap', movement: 'Not programmed', note: '' },
+      sp_antilat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_flex: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_ext: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_lat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_antilat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_flex: { status: 'direct', movement: 'Overhead Press', note: '' },
+      sh_ext: { status: 'direct', movement: 'Rows · Pulldowns', note: '' },
+      sh_abd: { status: 'direct', movement: 'Lateral Raises', note: '' },
+      sh_add: { status: 'direct', movement: 'Flies', note: '' },
+      sh_hflex: { status: 'direct', movement: 'Bench Press', note: '' },
+      sh_hext: { status: 'incidental', movement: 'Rear Delt work', note: '' },
+      sh_ir: { status: 'incidental', movement: 'Pressing', note: '' },
+      sh_er: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_d1: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_d2: { status: 'gap', movement: 'Not programmed', note: '' },
+      sc_ret: { status: 'direct', movement: 'Rows', note: '' },
+      sc_pro: { status: 'incidental', movement: 'Pressing', note: '' },
+      sc_elev: { status: 'incidental', movement: 'Shrugs sometimes', note: '' },
+      sc_dep: { status: 'direct', movement: 'Pull Ups · Pulldowns', note: '' },
+      sc_uprot: { status: 'incidental', movement: 'OHP', note: '' },
+      sc_dnrot: { status: 'gap', movement: 'Not programmed', note: '' },
+      el_flex: { status: 'direct', movement: 'Rows · Curls', note: '' },
+      el_ext: { status: 'direct', movement: 'Bench · Dips · Extensions', note: '' },
+      el_sup: { status: 'gap', movement: 'Not programmed', note: '' },
+      el_pro: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_flex: { status: 'incidental', movement: 'Grip', note: '' },
+      wr_ext: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_rad: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_uln: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_fflex: { status: 'direct', movement: 'Deadlifts', note: '' },
+      wr_fext: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_flex: { status: 'direct', movement: 'Squat · Leg Press', note: '' },
+      hp_ext: { status: 'direct', movement: 'Deadlift · RDL · Leg Curl', note: '' },
+      hp_abd: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_add: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_ir: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_er: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_al: { status: 'gap', movement: 'Not programmed', note: '' },
+      kn_flex: { status: 'direct', movement: 'Leg Curl · Squat', note: '' },
+      kn_ext: { status: 'direct', movement: 'Leg Extension · Squat', note: '' },
+      kn_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      ank_pf: { status: 'direct', movement: 'Calf Raises', note: '' },
+      ank_df: { status: 'gap', movement: 'Not programmed', note: '' },
+      ank_inv: { status: 'gap', movement: 'Not programmed', note: '' },
+    }
+  },
+
+  athletic: {
+    name: "Athletic Program",
+    score: 78,
+    coverage: {
+      sp_flex: { status: 'direct', movement: 'Ab work', note: '' },
+      sp_ext: { status: 'direct', movement: 'Deadlifts · Good Mornings', note: '' },
+      sp_antiflex: { status: 'direct', movement: 'Rollouts · Planks', note: '' },
+      sp_antiext: { status: 'direct', movement: 'Plank variations', note: '' },
+      sp_rot: { status: 'direct', movement: 'Rotational throws · Cable rotations', note: '' },
+      sp_antirot: { status: 'direct', movement: 'Pallof Press', note: '' },
+      sp_lat: { status: 'incidental', movement: 'Lateral movements', note: '' },
+      sp_antilat: { status: 'direct', movement: 'Suitcase carries', note: '' },
+      cv_flex: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_ext: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_lat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_antilat: { status: 'gap', movement: 'Not programmed', note: '' },
+      cv_rot: { status: 'gap', movement: 'Not programmed', note: '' },
+      sh_flex: { status: 'direct', movement: 'Overhead Press · Landmine', note: '' },
+      sh_ext: { status: 'direct', movement: 'Rows · Pulldowns', note: '' },
+      sh_abd: { status: 'direct', movement: 'Lateral Raises', note: '' },
+      sh_add: { status: 'direct', movement: 'Flies · Cable work', note: '' },
+      sh_hflex: { status: 'direct', movement: 'Bench · Landmine', note: '' },
+      sh_hext: { status: 'direct', movement: 'Rear Delt work', note: '' },
+      sh_ir: { status: 'incidental', movement: 'Pressing', note: '' },
+      sh_er: { status: 'incidental', movement: 'Band work sometimes', note: '' },
+      sh_d1: { status: 'incidental', movement: 'Diagonal cable sometimes', note: '' },
+      sh_d2: { status: 'gap', movement: 'Not programmed', note: '' },
+      sc_ret: { status: 'direct', movement: 'Rows', note: '' },
+      sc_pro: { status: 'incidental', movement: 'Pressing', note: '' },
+      sc_elev: { status: 'direct', movement: 'Shrugs · Carries', note: '' },
+      sc_dep: { status: 'direct', movement: 'Pull Ups', note: '' },
+      sc_uprot: { status: 'incidental', movement: 'OHP', note: '' },
+      sc_dnrot: { status: 'gap', movement: 'Not programmed', note: '' },
+      el_flex: { status: 'direct', movement: 'Rows · Curls', note: '' },
+      el_ext: { status: 'direct', movement: 'Press · Extensions', note: '' },
+      el_sup: { status: 'incidental', movement: 'Grip variations', note: '' },
+      el_pro: { status: 'incidental', movement: 'Grip variations', note: '' },
+      wr_flex: { status: 'incidental', movement: 'Grip', note: '' },
+      wr_ext: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_rad: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_uln: { status: 'gap', movement: 'Not programmed', note: '' },
+      wr_fflex: { status: 'direct', movement: 'Deadlifts · Carries', note: '' },
+      wr_fext: { status: 'gap', movement: 'Not programmed', note: '' },
+      hp_flex: { status: 'direct', movement: 'Squat · Lunge', note: '' },
+      hp_ext: { status: 'direct', movement: 'Deadlift · RDL · Hip Thrust', note: '' },
+      hp_abd: { status: 'direct', movement: 'Lateral Lunge · Lateral Band', note: '' },
+      hp_add: { status: 'direct', movement: 'Lateral Lunge return · Copenhagen', note: '' },
+      hp_ir: { status: 'incidental', movement: 'Split squat', note: '' },
+      hp_er: { status: 'direct', movement: 'Hip rotation work', note: '' },
+      hp_al: { status: 'direct', movement: 'Suitcase carries', note: '' },
+      kn_flex: { status: 'direct', movement: 'Leg Curl · Squat', note: '' },
+      kn_ext: { status: 'direct', movement: 'Leg Extension · Squat', note: '' },
+      kn_rot: { status: 'direct', movement: 'Single leg work', note: '' },
+      ank_pf: { status: 'direct', movement: 'Calf Raises', note: '' },
+      ank_df: { status: 'direct', movement: 'Tibialis raises', note: '' },
+      ank_inv: { status: 'incidental', movement: 'Balance work', note: '' },
+    }
+  }
+};
+
+// =============================================
+// RENDER
+// =============================================
+
+let currentProgram = 'corey';
+
+function getStatusLabel(status) {
+  const labels = { direct: 'Direct', incidental: 'Incidental', rotating: 'Rotating', gap: 'Gap' };
+  return labels[status] || status;
+}
+
+function buildTable(programKey) {
+  const prog = PROGRAMS[programKey];
+  const container = document.getElementById('tableContainer');
+  container.innerHTML = '';
+
+  const groupColors = { axial: '#7a6e5a', upper: '#5a7a8a', lower: '#6a7a5a', distal: '#7a5a7a' };
+  const groupNames = { axial: 'Axial Skeleton', upper: 'Upper Extremity', lower: 'Lower Extremity', distal: 'Distal Joints' };
+
+  let currentGroup = null;
+  let groupDiv = null;
+  let rowDiv = null;
+
+  JOINTS.forEach((joint, ji) => {
+    if (joint.group !== currentGroup) {
+      currentGroup = joint.group;
+      groupDiv = document.createElement('div');
+      groupDiv.className = `joint-group ${joint.group}`;
+      groupDiv.style.marginBottom = '16px';
+
+      const label = document.createElement('div');
+      label.className = 'joint-group-label';
+      label.textContent = groupNames[joint.group];
+      groupDiv.appendChild(label);
+
+      rowDiv = document.createElement('div');
+      rowDiv.className = 'elements-row';
+      groupDiv.appendChild(rowDiv);
+      container.appendChild(groupDiv);
+    }
+
+    // Add spacer between joints within group
+    if (ji > 0 && JOINTS[ji-1].group === joint.group) {
+      const spacer = document.createElement('div');
+      spacer.style.cssText = 'width:1px; background: #1e1e1e; margin: 0 2px; align-self: stretch; flex-shrink:0;';
+      rowDiv.appendChild(spacer);
+    }
+
+    joint.planes.forEach((plane, pi) => {
+      const coverage = prog.coverage[plane.id];
+      const status = coverage ? coverage.status : 'gap';
+
+      const el = document.createElement('div');
+      el.className = `element ${status}`;
+      el.style.animationDelay = `${(ji * 0.05 + pi * 0.02)}s`;
+
+      el.innerHTML = `
+        <div class="el-number">${String(pi + 1).padStart(2, '0')}</div>
+        <div class="el-symbol">${plane.sym}</div>
+        <div class="el-name">${plane.name}</div>
+        <div class="el-joint">${joint.id.substring(0,3).toUpperCase()}</div>
+      `;
+
+      el.addEventListener('mouseenter', (e) => showTooltip(e, joint, plane, coverage));
+      el.addEventListener('mousemove', (e) => moveTooltip(e));
+      el.addEventListener('mouseleave', hideTooltip);
+
+      rowDiv.appendChild(el);
+    });
+  });
+
+  // Update score
+  const scoreEl = document.getElementById('scoreDisplay');
+  const fillEl = document.getElementById('scoreFill');
+  scoreEl.textContent = prog.score + '%';
+  fillEl.style.width = prog.score + '%';
+
+  // Update active button
+  document.querySelectorAll('.prog-btn').forEach(btn => btn.classList.remove('active'));
+  event && event.target && event.target.classList.add('active');
+}
+
+function loadProgram(key) {
+  currentProgram = key;
+  buildTable(key);
+  // Update active button
+  document.querySelectorAll('.prog-btn').forEach(btn => {
+    btn.classList.remove('active');
+    if (btn.getAttribute('onclick').includes(key)) btn.classList.add('active');
+  });
+}
+
+// Tooltip
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(e, joint, plane, coverage) {
+  if (!coverage) return;
+  document.getElementById('ttJoint').textContent = joint.name;
+  document.getElementById('ttPlane').textContent = plane.name;
+  const statusEl = document.getElementById('ttStatus');
+  statusEl.textContent = getStatusLabel(coverage.status);
+  statusEl.className = `tooltip-status ${coverage.status}`;
+  document.getElementById('ttMovement').textContent = coverage.movement;
+  document.getElementById('ttNote').textContent = coverage.note;
+  tooltip.classList.add('visible');
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const x = e.clientX + 16;
+  const y = e.clientY - 10;
+  const tw = tooltip.offsetWidth;
+  const th = tooltip.offsetHeight;
+  tooltip.style.left = (x + tw > window.innerWidth ? x - tw - 32 : x) + 'px';
+  tooltip.style.top = (y + th > window.innerHeight ? y - th : y) + 'px';
+}
+
+function hideTooltip() {
+  tooltip.classList.remove('visible');
+}
+
+// INIT
+buildTable('corey');
+</script>
+</body>
+</html>
