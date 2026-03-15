@@ -3,59 +3,572 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Completeness Principle — Series Hub</title>
+<title>The Completeness Principle</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --gold: #C8A96E;
+    --gold-dim: #8a7248;
+    --bg: #080808;
+    --bg-2: #0e0e0e;
+    --bg-3: #141414;
+    --border: #1a1a1a;
+    --text: #d8d4cc;
+    --text-dim: #555;
+    --text-muted: #2e2e2e;
+    --direct: #4a9e6e;
+    --incidental: #4a7eb5;
+    --rotating: #9b6eb5;
+    --gap: #b55a4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
   body {
-    font-family: 'JetBrains Mono', monospace;
-    background: #0a0a0a;
-    color: #ddd8d0;
-    margin: 0;
-    padding: 40px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'EB Garamond', serif;
+    font-size: 18px;
+    line-height: 1.7;
+    overflow-x: hidden;
   }
+
+  /* Subtle grid overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(200,169,110,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(200,169,110,0.015) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 80px 48px 72px;
+    max-width: 960px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.1s forwards;
+  }
+
   h1 {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 3em;
-    margin-bottom: 0.5em;
-    color: #c8a052;
+    font-family: 'EB Garamond', serif;
+    font-size: clamp(48px, 7vw, 84px);
+    font-weight: 700;
+    color: #f0ece4;
+    line-height: 1.0;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.2s forwards;
   }
-  p {
-    font-size: 1em;
-    line-height: 1.6;
-    margin-bottom: 1em;
+
+  .tagline {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px;
+    color: var(--gold-dim);
+    letter-spacing: 0.12em;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.35s forwards;
   }
-  a {
-    color: #6a9fb0;
+
+  /* ── ABOUT ── */
+  .about {
+    position: relative;
+    z-index: 10;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 72px 48px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.5s forwards;
+  }
+
+  .about-left p {
+    font-size: 20px;
+    line-height: 1.75;
+    color: #a8a49c;
+    margin-bottom: 20px;
+  }
+
+  .about-left p:last-child { margin-bottom: 0; }
+
+  .about-left strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .stats {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .stat {
+    border-left: 2px solid var(--border);
+    padding-left: 20px;
+  }
+
+  .stat-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  /* ── COVERAGE LEGEND ── */
+  .coverage {
+    display: flex;
+    gap: 24px;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+
+  .coverage-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+  }
+
+  .coverage-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* ── TABLE SECTION ── */
+  .table-section {
+    position: relative;
+    z-index: 10;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 72px 48px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeUp 0.9s 0.65s forwards;
+  }
+
+  .section-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+
+  .table-embed {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-3);
+  }
+
+  .table-embed-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .table-embed-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .table-embed-link {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
     text-decoration: none;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.2s;
   }
-  a:hover {
-    text-decoration: underline;
+
+  .table-embed-link:hover { opacity: 0.7; }
+
+  .table-frame {
+    width: 100%;
+    height: 520px;
+    border: none;
+    display: block;
+    background: var(--bg-3);
   }
-  .links {
-    margin-top: 2em;
+
+  /* ── ARTICLES ── */
+  .articles-section {
+    position: relative;
+    z-index: 10;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 72px 48px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeUp 0.9s 0.75s forwards;
   }
-  .link-item {
-    margin-bottom: 1em;
-    font-size: 1.1em;
+
+  .articles-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .article-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px;
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .article-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .article-card:hover {
+    border-color: #2a2a2a;
+    background: #111;
+  }
+
+  .article-card:hover::before { opacity: 1; }
+
+  .article-number {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .article-title {
+    font-family: 'EB Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: #e0dcd4;
+    line-height: 1.3;
+    margin-bottom: 8px;
+  }
+
+  .article-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .article-status {
+    position: absolute;
+    top: 28px;
+    right: 28px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--direct);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ── LINKS SECTION ── */
+  .links-section {
+    position: relative;
+    z-index: 10;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 72px 48px;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.85s forwards;
+  }
+
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 32px;
+  }
+
+  .link-card {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px 24px;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.2s;
+  }
+
+  .link-card:hover { border-color: #2a2a2a; }
+
+  .link-icon {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .link-title {
+    font-family: 'EB Garamond', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: #e0dcd4;
+  }
+
+  .link-desc {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    line-height: 1.5;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 10;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 48px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-left {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .footer-tcp {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 680px) {
+    header, .about, .table-section, .articles-section, .links-section, footer {
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .about { grid-template-columns: 1fr; gap: 40px; }
+    .articles-grid { grid-template-columns: 1fr; }
+    .links-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 16px; align-items: flex-start; }
   }
 </style>
 </head>
 <body>
 
-<h1>The Completeness Principle</h1>
-<p>Welcome to the series hub for The Completeness Principle. Here you can access the interactive joint periodic table and read articles explaining how to design mechanically complete training programs.</p>
+<!-- HEADER -->
+<header>
+  <div class="eyebrow">The Completeness Principle</div>
+  <h1>Train Every Plane.</h1>
+  <div class="tagline">Fight in any direction.</div>
+</header>
 
-<div class="links">
-  <div class="link-item">
-    <a href="periodic_table_of_joint_mechanics.html" target="_blank">Interactive Joint Periodic Table</a>
+<!-- ABOUT -->
+<div class="about">
+  <div class="about-left">
+    <p>
+      <strong>The Completeness Principle</strong> is a joint mechanics framework for analyzing movement, training programs, and injury patterns.
+    </p>
+    <p>
+      The system maps every primary plane of motion across every joint system in the body — revealing the mechanical gaps most programs miss and the compensation patterns those gaps produce.
+    </p>
+    <p>
+      Most training programs cover one plane per joint. The map shows all of them.
+    </p>
+
+    <div class="coverage">
+      <div class="coverage-item">
+        <div class="coverage-dot" style="background: var(--direct)"></div>
+        Direct
+      </div>
+      <div class="coverage-item">
+        <div class="coverage-dot" style="background: var(--incidental)"></div>
+        Incidental
+      </div>
+      <div class="coverage-item">
+        <div class="coverage-dot" style="background: var(--rotating)"></div>
+        Rotating
+      </div>
+      <div class="coverage-item">
+        <div class="coverage-dot" style="background: var(--gap)"></div>
+        Gap
+      </div>
+    </div>
   </div>
-  <div class="link-item">
-    <a href="https://corey636352.substack.com/p/the-completeness-principle?r=6pziq0" target="_blank">Forearm Mechanics — First Article</a>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number">51</div>
+      <div class="stat-label">Mechanical Planes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">9</div>
+      <div class="stat-label">Joint Systems</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">1</div>
+      <div class="stat-label">Mechanical Map</div>
+    </div>
   </div>
-  <div class="link-item">
-    <a href="https://corey636352.substack.com/p/the-hip-the-mechanical-center-of?r=6pziq0" target="_blank">Hip Mechanics — Second Article</a>
-  </div>
-  <!-- Add more articles here as the series grows -->
 </div>
+
+<!-- PERIODIC TABLE -->
+<div class="table-section">
+  <div class="section-label">The Periodic Table of Joint Mechanics</div>
+  <div class="table-embed">
+    <div class="table-embed-header">
+      <div class="table-embed-title">Interactive Map · 51 Planes · 9 Systems</div>
+      <a href="periodic_table_of_joint_mechanics.html" target="_blank" class="table-embed-link">
+        Open full table →
+      </a>
+    </div>
+    <iframe
+      src="periodic_table_of_joint_mechanics.html"
+      class="table-frame"
+      title="Periodic Table of Joint Mechanics"
+      scrolling="no">
+    </iframe>
+  </div>
+</div>
+
+<!-- ARTICLE SERIES -->
+<div class="articles-section">
+  <div class="section-label">Article Series</div>
+  <div class="articles-grid">
+
+    <a href="https://corey636352.substack.com/p/the-completeness-principle?r=6pziq0" target="_blank" class="article-card">
+      <div class="article-status">Live</div>
+      <div class="article-number">Article 01</div>
+      <div class="article-title">The Completeness Principle</div>
+      <div class="article-sub">Forearm proof of concept · Framework introduction</div>
+    </a>
+
+    <a href="https://corey636352.substack.com/p/the-hip-the-mechanical-center-of?r=6pziq0" target="_blank" class="article-card">
+      <div class="article-status">Live</div>
+      <div class="article-number">Article 02</div>
+      <div class="article-title">The Hip</div>
+      <div class="article-sub">The mechanical center of the body · Injury prediction</div>
+    </a>
+
+    <div class="article-card" style="opacity: 0.4; cursor: default;">
+      <div class="article-number">Article 03</div>
+      <div class="article-title">The Spine</div>
+      <div class="article-sub">Compensation chain · Volume solution · Coming soon</div>
+    </div>
+
+    <div class="article-card" style="opacity: 0.4; cursor: default;">
+      <div class="article-number">Article 04</div>
+      <div class="article-title">The Shoulder</div>
+      <div class="article-sub">Most complex joint · Scapulothoracic reveal · Coming soon</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LINKS -->
+<div class="links-section">
+  <div class="section-label">Explore</div>
+  <div class="links-grid">
+
+    <a href="https://corey636352.substack.com" target="_blank" class="link-card">
+      <div class="link-icon">✦</div>
+      <div class="link-title">Substack</div>
+      <div class="link-desc">Full article series · Framework development · Subscribe for updates</div>
+    </a>
+
+    <a href="periodic_table_of_joint_mechanics.html" target="_blank" class="link-card">
+      <div class="link-icon">⊞</div>
+      <div class="link-title">Periodic Table</div>
+      <div class="link-desc">Interactive mechanical map · 51 planes · Program comparison</div>
+    </a>
+
+    <a href="https://www.instagram.com/thecompletenessprinciple" target="_blank" class="link-card">
+      <div class="link-icon">◈</div>
+      <div class="link-title">Instagram</div>
+      <div class="link-desc">@TheCompletenessPrinciple · Joint mechanics · Movement science</div>
+    </a>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-left">The Completeness Principle · Joint Mechanics Framework · 2026</div>
+  <div class="footer-tcp">TCP</div>
+</footer>
 
 </body>
 </html>
