@@ -8,8 +8,8 @@
 <style>
   :root {
     --bg:#080808; --bg2:#0e0e0e; --bg3:#141414;
-    --border:#1c1c1c; --gold:#C8A96E;
-    --text:#d8d4cc; --muted:#666; --faint:#333;
+    --border:#1c1c1c; --gold:#C8A96E; --gold-dim:#7a6540;
+    --text:#d8d4cc; --muted:#444; --faint:#222;
     --direct:#4a9e6e; --direct-fg:#6abe90;
     --incidental:#4a7eb5; --inc-fg:#6a9ed0;
     --rotating:#9b6eb5; --rot-fg:#b885d8;
@@ -17,235 +17,624 @@
     --secondary:#5a5a3a; --sec-fg:#9a9a5a;
     --rare:#3a5a4a; --rare-fg:#6a9a7a;
   }
-  
   * { margin:0; padding:0; box-sizing:border-box; }
   body {
     background:var(--bg); color:var(--text);
     font-family:'IBM Plex Mono',monospace;
-    padding:40px 20px;
+    min-height:100vh; padding:48px 32px 80px;
   }
-
-  .page { max-width: 1400px; margin: 0 auto; }
+  body::before {
+    content:''; position:fixed; inset:0;
+    background-image:
+      linear-gradient(rgba(200,169,110,0.012) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(200,169,110,0.012) 1px,transparent 1px);
+    background-size:44px 44px; pointer-events:none; z-index:0;
+  }
+  .page { position:relative; z-index:1; max-width:1300px; margin:0 auto; }
 
   /* HEADER */
-  .header { text-align: left; margin-bottom: 40px; border-left: 3px solid var(--gold); padding-left: 20px; }
-  .header-eyebrow { font-size: 10px; letter-spacing: 0.3em; color: var(--gold); text-transform: uppercase; }
-  .header-title { font-family: 'EB Garamond', serif; font-size: 38px; color: #f0ece4; }
-  .header-sub { font-size: 11px; color: var(--muted); margin-top: 5px; }
+  .header { text-align:center; margin-bottom:48px; }
+  .header-eyebrow { font-size:10px; letter-spacing:0.3em; color:var(--gold); text-transform:uppercase; margin-bottom:14px; }
+  .header-title { font-family:'EB Garamond',serif; font-size:clamp(28px,4vw,44px); font-weight:600; color:#f0ece4; letter-spacing:-0.02em; margin-bottom:10px; }
+  .header-sub { font-size:11px; color:var(--muted); letter-spacing:0.15em; margin-bottom:28px; }
 
-  /* LEGEND - Positioned like the "Key" in a periodic table */
-  .legend-box {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    padding: 15px;
-    margin-bottom: 40px;
-    border-radius: 4px;
+  /* LEGEND */
+  .legend { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:48px; }
+  .leg { display:flex; align-items:center; gap:7px; font-size:10px; color:var(--muted); letter-spacing:0.08em; }
+  .leg-bar { width:20px; height:3px; border-radius:2px; }
+  .lb-d{background:var(--direct);}
+  .lb-i{background:var(--incidental);}
+  .lb-r{background:var(--rotating);}
+  .lb-g{background:var(--gap);}
+  .lb-s{background:var(--secondary);}
+  .lb-ra{background:var(--rare);}
+
+  /* SYSTEM */
+  .system { margin-bottom:40px; }
+  .system-header {
+    display:flex; align-items:baseline; gap:14px;
+    margin-bottom:14px; padding-bottom:10px;
+    border-bottom:1px solid var(--border);
   }
-  .leg { display: flex; align-items: center; gap: 8px; font-size: 9px; text-transform: uppercase; color: #aaa; }
-  .leg-swatch { width: 12px; height: 12px; border-radius: 2px; }
+  .system-num { font-size:10px; color:var(--faint); letter-spacing:0.1em; flex-shrink:0; }
+  .system-name { font-family:'EB Garamond',serif; font-size:18px; font-weight:600; color:#c8c4bc; letter-spacing:0.01em; }
+  .system-type { font-size:9px; color:var(--muted); letter-spacing:0.15em; text-transform:uppercase; margin-left:auto; }
+  .tiles { display:flex; flex-wrap:wrap; gap:10px; }
 
-  /* THE GRID SYSTEM */
-  .periodic-table {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr); /* 12 Joint Systems */
-    gap: 8px;
-    overflow-x: auto;
-    padding-bottom: 20px;
-  }
-
-  .system-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  /* GROUP LABELS (Numbers at top) */
-  .group-label {
-    text-align: center;
-    font-size: 10px;
-    color: var(--gold);
-    border-bottom: 1px solid var(--faint);
-    padding-bottom: 5px;
-    margin-bottom: 5px;
-    height: 45px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-  }
-  .group-label span { display: block; font-size: 8px; color: var(--muted); }
-
-  /* TILE STYLING */
+  /* TILE */
   .tile {
-    aspect-ratio: 1 / 1.2;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    transition: all 0.2s ease;
+    width:118px; height:142px;
+    background:var(--bg2); border:1px solid var(--border);
+    border-radius:5px; padding:9px 10px 8px;
+    position:relative; display:flex; flex-direction:column;
+    transition:transform 0.15s,border-color 0.15s; cursor:default;
   }
-  .tile:hover { border-color: var(--gold); z-index: 10; transform: scale(1.05); background: #111; }
-
-  .tile-idx { font-size: 8px; color: var(--muted); }
-  .tile-symbol { font-size: 20px; font-weight: 600; margin-top: 2px; }
-  .tile-name { font-size: 8px; font-weight: 400; color: #888; text-transform: uppercase; margin-top: auto; white-space: nowrap; overflow: hidden; }
-  
-  /* COLOR CODING */
-  .t-direct { border-top: 3px solid var(--direct); }
-  .t-direct .tile-symbol { color: var(--direct-fg); }
-  .t-incidental { border-top: 3px solid var(--incidental); }
-  .t-incidental .tile-symbol { color: var(--inc-fg); }
-  .t-rotating { border-top: 3px solid var(--rotating); }
-  .t-rotating .tile-symbol { color: var(--rot-fg); }
-  .t-gap { border-top: 3px solid var(--gap); }
-  .t-gap .tile-symbol { color: var(--gap-fg); }
-  .t-secondary { border-top: 3px solid var(--secondary); }
-  .t-secondary .tile-symbol { color: var(--sec-fg); }
-  .t-rare { border-top: 3px solid var(--rare); }
-  .t-rare .tile-symbol { color: var(--rare-fg); }
-
-  .footer-note {
-    margin-top: 60px;
-    padding: 30px;
-    border: 1px dashed var(--border);
-    color: #666;
-    font-family: 'EB Garamond', serif;
-    font-style: italic;
-    text-align: center;
-    line-height: 1.6;
+  .tile:hover { transform:translateY(-2px); border-color:#282828; }
+  .tile::before {
+    content:''; position:absolute;
+    top:0; left:0; right:0; height:3px;
+    border-radius:5px 5px 0 0;
   }
+  .t-direct::before     { background:var(--direct); }
+  .t-incidental::before { background:var(--incidental); }
+  .t-rotating::before   { background:var(--rotating); }
+  .t-gap::before        { background:var(--gap); }
+  .t-secondary::before  { background:var(--secondary); }
+  .t-rare::before       { background:var(--rare); }
+
+  .tile-idx { font-size:9px; color:var(--faint); letter-spacing:0.06em; margin-bottom:3px; flex-shrink:0; }
+  .tile-symbol { font-size:28px; font-weight:600; line-height:1; letter-spacing:-0.02em; margin-bottom:5px; flex-shrink:0; }
+  .t-direct     .tile-symbol { color:var(--direct-fg); }
+  .t-incidental .tile-symbol { color:var(--inc-fg); }
+  .t-rotating   .tile-symbol { color:var(--rot-fg); }
+  .t-gap        .tile-symbol { color:var(--gap-fg); }
+  .t-secondary  .tile-symbol { color:var(--sec-fg); }
+  .t-rare       .tile-symbol { color:var(--rare-fg); }
+
+  .tile-name { font-size:10px; font-weight:600; color:#c0bbb3; line-height:1.25; margin-bottom:3px; flex-shrink:0; }
+  .tile-plane { font-size:8.5px; color:var(--muted); letter-spacing:0.04em; text-transform:uppercase; flex-shrink:0; }
+  .tile-detail {
+    font-size:8.5px; line-height:1.4;
+    margin-top:auto; padding-top:6px;
+    border-top:1px solid #181818;
+  }
+  .t-direct     .tile-detail { color:#3a7e58; }
+  .t-incidental .tile-detail { color:#3a6a96; }
+  .t-rotating   .tile-detail { color:#7a58a0; }
+  .t-gap        .tile-detail { color:#984838; }
+  .t-secondary  .tile-detail { color:#6a6a3a; }
+  .t-rare       .tile-detail { color:#4a7a5a; }
+
+  /* DEFINITION */
+  .definition {
+    margin-top:56px; padding:28px 32px;
+    border:1px solid var(--border); border-radius:6px;
+    background:var(--bg2);
+    font-family:'EB Garamond',serif;
+    font-size:16px; line-height:1.75;
+    color:#888; text-align:center; font-style:italic;
+  }
+  .definition strong { color:#b0aca4; font-style:normal; }
 </style>
 </head>
 <body>
-
 <div class="page">
+
   <div class="header">
     <div class="header-eyebrow">The Completeness Principle</div>
-    <h1 class="header-title">Periodic Table of Joint Mechanics</h1>
-    <div class="header-sub">A structural map of human movement planes.</div>
+    <div class="header-title">Periodic Table of Joint Mechanics</div>
+    <div class="header-sub">52 planes &nbsp;·&nbsp; 12 joint systems &nbsp;·&nbsp; one mechanical map</div>
   </div>
 
-  <div class="legend-box">
-    <div class="leg"><div class="leg-swatch" style="background:var(--direct)"></div> Direct</div>
-    <div class="leg"><div class="leg-swatch" style="background:var(--incidental)"></div> Incidental</div>
-    <div class="leg"><div class="leg-swatch" style="background:var(--rotating)"></div> Rotating</div>
-    <div class="leg"><div class="leg-swatch" style="background:var(--gap)"></div> Gap / Need Fix</div>
-    <div class="leg"><div class="leg-swatch" style="background:var(--secondary)"></div> Secondary</div>
-    <div class="leg"><div class="leg-swatch" style="background:var(--rare)"></div> Rare/Flexion Dep.</div>
+  <div class="legend">
+    <div class="leg"><div class="leg-bar lb-d"></div>Direct</div>
+    <div class="leg"><div class="leg-bar lb-i"></div>Incidental</div>
+    <div class="leg"><div class="leg-bar lb-r"></div>Rotating / Periodized</div>
+    <div class="leg"><div class="leg-bar lb-g"></div>Gap</div>
+    <div class="leg"><div class="leg-bar lb-s"></div>Rarely Programmed</div>
+    <div class="leg"><div class="leg-bar lb-ra"></div>Flexion Dependent</div>
   </div>
 
-  <div class="periodic-table">
-    
-    <div class="system-group">
-      <div class="group-label">01 <span>Cervical</span></div>
-      <div class="tile t-direct"><div class="tile-idx">1.1</div><div class="tile-symbol">CVF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-direct"><div class="tile-idx">1.2</div><div class="tile-symbol">CVE</div><div class="tile-name">Extension</div></div>
-      <div class="tile t-direct"><div class="tile-idx">1.3</div><div class="tile-symbol">CVL</div><div class="tile-name">Lateral</div></div>
-      <div class="tile t-direct"><div class="tile-idx">1.4</div><div class="tile-symbol">CVR</div><div class="tile-name">Rotation</div></div>
+  <!-- 01 CERVICAL -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">01</div>
+      <div class="system-name">Cervical Spine</div>
+      <div class="system-type">Segmental · C1–C7 · Mobility dominant</div>
     </div>
-
-    <div class="system-group">
-      <div class="group-label">02 <span>Thoracic</span></div>
-      <div class="tile t-direct"><div class="tile-idx">2.1</div><div class="tile-symbol">THF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-direct"><div class="tile-idx">2.2</div><div class="tile-symbol">THE</div><div class="tile-name">Extension</div></div>
-      <div class="tile t-direct"><div class="tile-idx">2.3</div><div class="tile-symbol">THL</div><div class="tile-name">Lateral</div></div>
-      <div class="tile t-direct"><div class="tile-idx">2.4</div><div class="tile-symbol">THR</div><div class="tile-name">Rotation</div></div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">01.1</div>
+        <div class="tile-symbol">CVF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Neck harness · Chest day</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">01.2</div>
+        <div class="tile-symbol">CVE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Neck harness · Chest day</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">01.3</div>
+        <div class="tile-symbol">CVL</div>
+        <div class="tile-name">Lateral Flexion</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">BW lateral · Shoulder day</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">01.4</div>
+        <div class="tile-symbol">CVR</div>
+        <div class="tile-name">Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">BW angle variation · Shoulder day</div>
+      </div>
     </div>
-
-    <div class="system-group">
-      <div class="group-label">03 <span>Lumbar</span></div>
-      <div class="tile t-direct"><div class="tile-idx">3.1</div><div class="tile-symbol">LUF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-direct"><div class="tile-idx">3.2</div><div class="tile-symbol">LUE</div><div class="tile-name">Extension</div></div>
-      <div class="tile t-direct"><div class="tile-idx">3.3</div><div class="tile-symbol">LUL</div><div class="tile-name">Lateral</div></div>
-      <div class="tile t-secondary"><div class="tile-idx">3.4</div><div class="tile-symbol">LUR</div><div class="tile-name">Rotation</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">04 <span>Scapula</span></div>
-      <div class="tile t-direct"><div class="tile-idx">4.1</div><div class="tile-symbol">SCR</div><div class="tile-name">Retract</div></div>
-      <div class="tile t-direct"><div class="tile-idx">4.2</div><div class="tile-symbol">SCP</div><div class="tile-name">Protract</div></div>
-      <div class="tile t-direct"><div class="tile-idx">4.3</div><div class="tile-symbol">SCE</div><div class="tile-name">Elevate</div></div>
-      <div class="tile t-direct"><div class="tile-idx">4.4</div><div class="tile-symbol">SCD</div><div class="tile-name">Depress</div></div>
-      <div class="tile t-direct"><div class="tile-idx">4.5</div><div class="tile-symbol">SCU</div><div class="tile-name">Up-Rot</div></div>
-      <div class="tile t-direct"><div class="tile-idx">4.6</div><div class="tile-symbol">SCW</div><div class="tile-name">Down-Rot</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">05 <span>Shoulder</span></div>
-      <div class="tile t-direct"><div class="tile-idx">5.1</div><div class="tile-symbol">SHF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-incidental"><div class="tile-idx">5.2</div><div class="tile-symbol">SHE</div><div class="tile-name">Extension</div></div>
-      <div class="tile t-rotating"><div class="tile-idx">5.3</div><div class="tile-symbol">SHA</div><div class="tile-name">Abduct</div></div>
-      <div class="tile t-direct"><div class="tile-idx">5.4</div><div class="tile-symbol">SHD</div><div class="tile-name">Adduct</div></div>
-      <div class="tile t-direct"><div class="tile-idx">5.5</div><div class="tile-symbol">HZF</div><div class="tile-name">H-Add</div></div>
-      <div class="tile t-direct"><div class="tile-idx">5.6</div><div class="tile-symbol">HZE</div><div class="tile-name">H-Abd</div></div>
-      <div class="tile t-rotating"><div class="tile-idx">5.7</div><div class="tile-symbol">SHX</div><div class="tile-name">Ext-Rot</div></div>
-      <div class="tile t-rotating"><div class="tile-idx">5.8</div><div class="tile-symbol">SHI</div><div class="tile-name">Int-Rot</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">06 <span>Elbow</span></div>
-      <div class="tile t-direct"><div class="tile-idx">6.1</div><div class="tile-symbol">ELF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-direct"><div class="tile-idx">6.2</div><div class="tile-symbol">ELE</div><div class="tile-name">Extension</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">07 <span>Wrist</span></div>
-      <div class="tile t-incidental"><div class="tile-idx">7.1</div><div class="tile-symbol">WRF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-incidental"><div class="tile-idx">7.2</div><div class="tile-symbol">WRE</div><div class="tile-name">Extension</div></div>
-      <div class="tile t-direct"><div class="tile-idx">7.3</div><div class="tile-symbol">PRO</div><div class="tile-name">Pronate</div></div>
-      <div class="tile t-direct"><div class="tile-idx">7.4</div><div class="tile-symbol">SUP</div><div class="tile-name">Supinate</div></div>
-      <div class="tile t-direct"><div class="tile-idx">7.5</div><div class="tile-symbol">ULN</div><div class="tile-name">Ulnar-D</div></div>
-      <div class="tile t-direct"><div class="tile-idx">7.6</div><div class="tile-symbol">RAD</div><div class="tile-name">Radial-D</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">08 <span>Fingers</span></div>
-      <div class="tile t-direct"><div class="tile-idx">8.1</div><div class="tile-symbol">FGF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-direct"><div class="tile-idx">8.2</div><div class="tile-symbol">FGE</div><div class="tile-name">Extension</div></div>
-      <div class="tile t-rare"><div class="tile-idx">8.3</div><div class="tile-symbol">FGA</div><div class="tile-name">Abduct</div></div>
-      <div class="tile t-rare"><div class="tile-idx">8.4</div><div class="tile-symbol">FGD</div><div class="tile-name">Adduct</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">09 <span>Hip</span></div>
-      <div class="tile t-direct"><div class="tile-idx">9.1</div><div class="tile-symbol">HIF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-direct"><div class="tile-idx">9.2</div><div class="tile-symbol">HIE</div><div class="tile-name">Extension</div></div>
-      <div class="tile t-rotating"><div class="tile-idx">9.3</div><div class="tile-symbol">HAb</div><div class="tile-name">Abduct</div></div>
-      <div class="tile t-rotating"><div class="tile-idx">9.4</div><div class="tile-symbol">HAd</div><div class="tile-name">Adduct</div></div>
-      <div class="tile t-rotating"><div class="tile-idx">9.5</div><div class="tile-symbol">HER</div><div class="tile-name">Ext-Rot</div></div>
-      <div class="tile t-gap"><div class="tile-idx">9.6</div><div class="tile-symbol">HIR</div><div class="tile-name">Int-Rot</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">10 <span>Knee</span></div>
-      <div class="tile t-direct"><div class="tile-idx">10.1</div><div class="tile-symbol">KNF</div><div class="tile-name">Flexion</div></div>
-      <div class="tile t-direct"><div class="tile-idx">10.2</div><div class="tile-symbol">KNE</div><div class="tile-name">Extension</div></div>
-      <div class="tile t-rare"><div class="tile-idx">10.3</div><div class="tile-symbol">KIR</div><div class="tile-name">Int-Rot</div></div>
-      <div class="tile t-rare"><div class="tile-idx">10.4</div><div class="tile-symbol">KER</div><div class="tile-name">Ext-Rot</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">11 <span>Ankle</span></div>
-      <div class="tile t-direct"><div class="tile-idx">11.1</div><div class="tile-symbol">ANP</div><div class="tile-name">Plantar</div></div>
-      <div class="tile t-gap"><div class="tile-idx">11.2</div><div class="tile-symbol">AND</div><div class="tile-name">Dorsi</div></div>
-    </div>
-
-    <div class="system-group">
-      <div class="group-label">12 <span>Subtalar</span></div>
-      <div class="tile t-gap"><div class="tile-idx">12.1</div><div class="tile-symbol">STI</div><div class="tile-name">Inversion</div></div>
-      <div class="tile t-gap"><div class="tile-idx">12.2</div><div class="tile-symbol">STE</div><div class="tile-name">Eversion</div></div>
-    </div>
-
   </div>
 
-  <div class="footer-note">
-    <strong>A training program is mechanically complete</strong> when every joint's primary planes of motion are either directly trained, incidentally stabilized, or deliberately rotated across the training cycle.
+  <!-- 02 THORACIC -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">02</div>
+      <div class="system-name">Thoracic Spine</div>
+      <div class="system-type">Segmental · T1–T12 · Rotation dominant</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">02.1</div>
+        <div class="tile-symbol">THF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Anti-flex · Deadlift · Rows</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">02.2</div>
+        <div class="tile-symbol">THE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Anti-ext · Plank · Ab wheel</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">02.3</div>
+        <div class="tile-symbol">THL</div>
+        <div class="tile-name">Lateral Flexion</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Suitcase carry rotation</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">02.4</div>
+        <div class="tile-symbol">THR</div>
+        <div class="tile-name">Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Woodchopper · Pallof · Back day</div>
+      </div>
+    </div>
   </div>
+
+  <!-- 03 LUMBAR -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">03</div>
+      <div class="system-name">Lumbar Spine</div>
+      <div class="system-type">Segmental · L1–L5 · Load transfer dominant</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">03.1</div>
+        <div class="tile-symbol">LUF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Anti-flex · Deadlift · Carries</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">03.2</div>
+        <div class="tile-symbol">LUE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Anti-ext · Plank · Ab wheel</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">03.3</div>
+        <div class="tile-symbol">LUL</div>
+        <div class="tile-name">Lateral Flexion</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Suitcase carry · Legs day</div>
+      </div>
+      <div class="tile t-secondary">
+        <div class="tile-idx">03.4</div>
+        <div class="tile-symbol">LUR</div>
+        <div class="tile-name">Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Very limited range · Rarely programmed directly</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 04 SCAPULOTHORACIC -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">04</div>
+      <div class="system-name">Scapulothoracic</div>
+      <div class="system-type">Gliding · Scapula on Rib Cage · Functional joint</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">04.1</div>
+        <div class="tile-symbol">SCR</div>
+        <div class="tile-name">Retraction</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">All rows · Every back day</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">04.2</div>
+        <div class="tile-symbol">SCP</div>
+        <div class="tile-name">Protraction</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Serratus punches · Chest warmup</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">04.3</div>
+        <div class="tile-symbol">SCE</div>
+        <div class="tile-name">Elevation</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Shrugs · Back day session 3</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">04.4</div>
+        <div class="tile-symbol">SCD</div>
+        <div class="tile-name">Depression</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Pull ups · Every back day</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">04.5</div>
+        <div class="tile-symbol">SCU</div>
+        <div class="tile-name">Upward Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Pull ups · Upright rows</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">04.6</div>
+        <div class="tile-symbol">SCW</div>
+        <div class="tile-name">Downward Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Trap grip pull ups · Shrugs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 GLENOHUMERAL -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">05</div>
+      <div class="system-name">Glenohumeral</div>
+      <div class="system-type">Ball and Socket · Shoulder · Most mobile joint</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">05.1</div>
+        <div class="tile-symbol">SHF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Military press · Every session</div>
+      </div>
+      <div class="tile t-incidental">
+        <div class="tile-idx">05.2</div>
+        <div class="tile-symbol">SHE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Rear delt row · End range</div>
+      </div>
+      <div class="tile t-rotating">
+        <div class="tile-idx">05.3</div>
+        <div class="tile-symbol">SHA</div>
+        <div class="tile-name">Abduction</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Lateral raise · Sessions 1,3</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">05.4</div>
+        <div class="tile-symbol">SHD</div>
+        <div class="tile-name">Adduction</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Chin ups · Pull ups</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">05.5</div>
+        <div class="tile-symbol">HZF</div>
+        <div class="tile-name">Horiz. Adduction</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Bench press · Cable flies</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">05.6</div>
+        <div class="tile-symbol">HZE</div>
+        <div class="tile-name">Horiz. Abduction</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Rear delt row · Every session</div>
+      </div>
+      <div class="tile t-rotating">
+        <div class="tile-idx">05.7</div>
+        <div class="tile-symbol">SHX</div>
+        <div class="tile-name">Ext. Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">BW side lying · Sessions 1,3</div>
+      </div>
+      <div class="tile t-rotating">
+        <div class="tile-idx">05.8</div>
+        <div class="tile-symbol">SHI</div>
+        <div class="tile-name">Int. Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Cable IR · Sessions 2,4</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 ELBOW -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">06</div>
+      <div class="system-name">Elbow</div>
+      <div class="system-type">Hinge · Humeroulnar · Flexion/Extension only</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">06.1</div>
+        <div class="tile-symbol">ELF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Curls · Chin ups · Rows</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">06.2</div>
+        <div class="tile-symbol">ELE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Press · Dips · Skullcrushers</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 WRIST/FOREARM -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">07</div>
+      <div class="system-name">Wrist / Forearm</div>
+      <div class="system-type">Hinge + Pivot · Radiocarpal + Radioulnar</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-incidental">
+        <div class="tile-idx">07.1</div>
+        <div class="tile-symbol">WRF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Deadlift · Rows · Grip incidental</div>
+      </div>
+      <div class="tile t-incidental">
+        <div class="tile-idx">07.2</div>
+        <div class="tile-symbol">WRE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Reverse curls · Anti-flexion</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">07.3</div>
+        <div class="tile-symbol">PRO</div>
+        <div class="tile-name">Pronation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Forearm bar · Back day</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">07.4</div>
+        <div class="tile-symbol">SUP</div>
+        <div class="tile-name">Supination</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Forearm bar · Back day</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">07.5</div>
+        <div class="tile-symbol">ULN</div>
+        <div class="tile-name">Ulnar Deviation</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Forearm bar · Legs day</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">07.6</div>
+        <div class="tile-symbol">RAD</div>
+        <div class="tile-name">Radial Deviation</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Forearm bar · Legs day</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 FINGERS -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">08</div>
+      <div class="system-name">Fingers</div>
+      <div class="system-type">Hinge + Condyloid · MCP + IP Joints</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">08.1</div>
+        <div class="tile-symbol">FGF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Deadlift · Rows · All grip work</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">08.2</div>
+        <div class="tile-symbol">FGE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Plate pinch · Extensor work</div>
+      </div>
+      <div class="tile t-rare">
+        <div class="tile-idx">08.3</div>
+        <div class="tile-symbol">FGA</div>
+        <div class="tile-name">Abduction</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Interossei · Rarely programmed · Grip width stability</div>
+      </div>
+      <div class="tile t-rare">
+        <div class="tile-idx">08.4</div>
+        <div class="tile-symbol">FGD</div>
+        <div class="tile-name">Adduction</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Interossei · Rarely programmed · Forearm size</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 09 HIP -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">09</div>
+      <div class="system-name">Hip</div>
+      <div class="system-type">Ball and Socket · Femoroacetabular · High cascade distance</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">09.1</div>
+        <div class="tile-symbol">HIF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Squat · Lunge · Leg press</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">09.2</div>
+        <div class="tile-symbol">HIE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Deadlift · RDL · Back day</div>
+      </div>
+      <div class="tile t-rotating">
+        <div class="tile-idx">09.3</div>
+        <div class="tile-symbol">HAb</div>
+        <div class="tile-name">Abduction</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Lateral lunge · Session 2</div>
+      </div>
+      <div class="tile t-rotating">
+        <div class="tile-idx">09.4</div>
+        <div class="tile-symbol">HAd</div>
+        <div class="tile-name">Adduction</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Lateral lunge · Session 1 isolation</div>
+      </div>
+      <div class="tile t-rotating">
+        <div class="tile-idx">09.5</div>
+        <div class="tile-symbol">HER</div>
+        <div class="tile-name">Ext. Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Rotation lunge · Session 3</div>
+      </div>
+      <div class="tile t-gap">
+        <div class="tile-idx">09.6</div>
+        <div class="tile-symbol">HIR</div>
+        <div class="tile-name">Int. Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Gap · Fix: 90/90 or cable IR</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10 KNEE -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">10</div>
+      <div class="system-name">Knee</div>
+      <div class="system-type">Modified Hinge · Tibiofemoral</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">10.1</div>
+        <div class="tile-symbol">KNF</div>
+        <div class="tile-name">Flexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Squat · Lunge · Leg curl</div>
+      </div>
+      <div class="tile t-direct">
+        <div class="tile-idx">10.2</div>
+        <div class="tile-symbol">KNE</div>
+        <div class="tile-name">Extension</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Squat · Leg extension · VMO</div>
+      </div>
+      <div class="tile t-rare">
+        <div class="tile-idx">10.3</div>
+        <div class="tile-symbol">KIR</div>
+        <div class="tile-name">Int. Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Flexion dependent · Popliteus · Incidental</div>
+      </div>
+      <div class="tile t-rare">
+        <div class="tile-idx">10.4</div>
+        <div class="tile-symbol">KER</div>
+        <div class="tile-name">Ext. Rotation</div>
+        <div class="tile-plane">Transverse</div>
+        <div class="tile-detail">Flexion dependent · Biceps femoris · Incidental</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11 TALOCRURAL -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">11</div>
+      <div class="system-name">Talocrural</div>
+      <div class="system-type">Hinge · True Ankle Joint · Sagittal only</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-direct">
+        <div class="tile-idx">11.1</div>
+        <div class="tile-symbol">ANP</div>
+        <div class="tile-name">Plantarflexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Calf raises · Seated + standing</div>
+      </div>
+      <div class="tile t-gap">
+        <div class="tile-idx">11.2</div>
+        <div class="tile-symbol">AND</div>
+        <div class="tile-name">Dorsiflexion</div>
+        <div class="tile-plane">Sagittal</div>
+        <div class="tile-detail">Gap · Fix: Tib bar · Toe raises</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 SUBTALAR -->
+  <div class="system">
+    <div class="system-header">
+      <div class="system-num">12</div>
+      <div class="system-name">Subtalar</div>
+      <div class="system-type">Gliding · Talocalcaneal · Frontal plane</div>
+    </div>
+    <div class="tiles">
+      <div class="tile t-gap">
+        <div class="tile-idx">12.1</div>
+        <div class="tile-symbol">STI</div>
+        <div class="tile-name">Inversion</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Gap · Lateral ankle stability</div>
+      </div>
+      <div class="tile t-gap">
+        <div class="tile-idx">12.2</div>
+        <div class="tile-symbol">STE</div>
+        <div class="tile-name">Eversion</div>
+        <div class="tile-plane">Frontal</div>
+        <div class="tile-detail">Gap · Peroneal stability</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="definition">
+    <strong>A training program is mechanically complete</strong> when every joint's primary planes of motion are either directly trained, incidentally stabilized, or deliberately rotated across the training cycle — with volume distributed proportionally to the anatomical mass of the fibers in that plane.
+  </div>
+
 </div>
-
 </body>
 </html>
